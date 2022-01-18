@@ -1,7 +1,8 @@
-import * as THREE from '../three/build/three.module.js';
-import { OrbitControls } from '../three/examples/jsm/controls/OrbitControls.js';
-import { GUI } from '../three/examples/jsm/libs/lil-gui.module.min.js';
-import Stats from '../three/examples/jsm/libs/stats.module.js';
+import * as THREE from './three/build/three.module.js';
+import { OrbitControls } from './three/examples/jsm/controls/OrbitControls.js';
+import { GUI } from './examples/jsm/libs/lil-gui.module.min.js';
+import Stats from './three/examples/jsm/libs/stats.module.js';
+import { FBXLoader } from './three/examples/jsm/loaders/FBXLoader.js';
 
 //TEXTURES
 const textureLoader = new THREE.TextureLoader();
@@ -26,6 +27,9 @@ const roofAlbedo = textureLoader.load('textures/roof/roof_albedo.png');
 
 //INIT
 const scene = new THREE.Scene();
+let mixer;
+let mixer2;
+const clock = new THREE.Clock();
 scene.background = new THREE.TextureLoader().load( "textures/nuages.jpeg" );
 
 const renderer = new THREE.WebGLRenderer({alpha:false,antialias:true});
@@ -47,7 +51,7 @@ controls.update();
 const ambientLight = new THREE.AmbientLight( 0xffffff, 0.1);
 scene.add( ambientLight );
 
-const terrain = createTerrain( 500, 500 );
+const terrain = createTerrain( 1000, 1000 );
 scene.add( terrain );
 
 const castle = createCastle();
@@ -56,13 +60,13 @@ scene.add( castle );
 const sun = createSun();
 scene.add(sun);
 
-createHerbs( 0.2, 2.5, 20000 );
+//createHerbs( 0.2, 2.5, 20000 );
 
 const curve = new THREE.CubicBezierCurve3(
-    new THREE.Vector3(-300,  -20, 20),
-    new THREE.Vector3( -150, 200, 20),
-    new THREE.Vector3( 150, 200, 20),
-    new THREE.Vector3( 300, -20, 20)
+    new THREE.Vector3(-550,  -20, 0),
+    new THREE.Vector3( -150, 400, 20),
+    new THREE.Vector3( 150, 400, 20),
+    new THREE.Vector3( 550, -20, 100)
 );
 
 const stats = new Stats();
@@ -75,12 +79,18 @@ animate();
 function animate( vitesse ) {
     //sunRun
     curve.getPoint((1 * vitesse * .0001) % 1, sun.position);
-    stats.update();
+    
     renderer.render( scene, camera ) ;
     requestAnimationFrame( animate );
+    const delta = clock.getDelta();
+
+    if ( mixer ) mixer.update( delta );
+     if ( mixer2 ) mixer2.update( delta );
+    renderer.render( scene, camera ) ;
+    stats.update();
 }
 
-renderer.render( scene, camera ) ;
+
 
 function createControls()
 {
@@ -113,6 +123,7 @@ function createControls()
     gui.open();
 }
 
+
 window.onresize = function () {
     camera.aspect = innerWidth / innerHeight;
     camera.updateProjectionMatrix();
@@ -129,6 +140,7 @@ function createHerbs ( width, height, numberOfHerbs ) {
         ))
     herb.material.side = THREE.DoubleSide;
     herb.position.y = height / 2;
+
     let newHerb;
     for ( let i = 0; i < numberOfHerbs; i++ )
     {
@@ -336,3 +348,61 @@ function createSun()
 
     return sun;
 }
+
+const loader = new FBXLoader();
+                loader.load( 'models/test2.fbx', function ( humanoid ) { //on appelle la fonction object lorsque la ressource est chargée
+
+                    mixer2 = new THREE.AnimationMixer( humanoid ); //initialisation de l'animation
+
+                    const action2 = mixer2.clipAction( humanoid.animations[ 0 ] ); //dans variable actione, on clip action l'animation contenue dans mixer
+                    action2.play();
+
+                    humanoid.traverse( function ( child ) {//exécute un call back sur object et tous ses descendants
+
+                        if ( child.isMesh ) {
+
+                            child.castShadow = true;
+                            child.receiveShadow = true;
+
+                        }
+
+                    } );
+                    humanoid.scale.x = 0.3;
+                    humanoid.scale.y = 0.3;
+                    humanoid.scale.z = 0.3;
+                    humanoid.position.x = 50;
+                    
+                    scene.add( humanoid );
+
+                } );
+
+const loader2 = new FBXLoader();
+                loader.load( 'models/UnarmedWalkForward.fbx', function ( man ) { //on appelle la fonction object lorsque la ressource est chargée
+
+                    mixer = new THREE.AnimationMixer( man ); //initialisation de l'animation
+
+                    const action = mixer.clipAction( man.animations[ 0 ] ); //dans variable actione, on clip action l'animation contenue dans mixer
+                    action.play();
+
+                    man.traverse( function ( child2 ) {//exécute un call back sur object et tous ses descendants
+
+                        if ( child2.isMesh ) {
+
+                            child2.castShadow = true;
+                            child2.receiveShadow = true;
+
+                        }
+
+                    } );
+                    
+                    man.position.x = -150;
+                    
+                    scene.add( man );
+                    man.scale.x = 0.3;
+                    man.scale.y = 0.3;
+                    man.scale.z = 0.3;
+
+                } );
+
+
+
