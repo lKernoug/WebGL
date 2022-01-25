@@ -1,17 +1,9 @@
 import * as THREE from './three/build/three.module.js';
 import { OrbitControls } from './three/examples/jsm/controls/OrbitControls.js';
+import { FirstPersonControls } from './examples/jsm/controls/FirstPersonControls.js';
 import { GUI } from './examples/jsm/libs/lil-gui.module.min.js';
 import Stats from './three/examples/jsm/libs/stats.module.js';
 import { FBXLoader } from './three/examples/jsm/loaders/FBXLoader.js';
-
-const startButton = document.getElementById( 'startButton' );
-startButton.addEventListener( 'click', createControls );
-///INIT
-const overlay = document.getElementById( 'overlay' );
-overlay.remove();
-//SOUND
-let analyser1, analyser2, analyser3;
-//StartButton
 
 //TEXTURES
 const textureLoader = new THREE.TextureLoader();
@@ -37,155 +29,258 @@ const roofRoughness = textureLoader.load('textures/roof/roof_roughness.png');
 const roofAo = textureLoader.load('textures/roof/roof_ao.png');
 const roofAlbedo = textureLoader.load('textures/roof/roof_albedo.png');
 
-
-
-
-
-const scene = new THREE.Scene();
 let mixer;
 let mixer2;
+
+const scene = new THREE.Scene();
+    
 const clock = new THREE.Clock();
 scene.background = new THREE.TextureLoader().load( "textures/nuages.jpeg" );
 
-const renderer = new THREE.WebGLRenderer({alpha:false,antialias:true});
-renderer.setSize( innerWidth, innerHeight );
-renderer.shadowMap.enabled = true;
-renderer.shadowMap.type = THREE.VSMShadowMap;
-renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.gammaFactor = 5;
-renderer.outputEncoding = THREE.sRGBEncoding;
-renderer.setPixelRatio( devicePixelRatio );
-document.body.appendChild( renderer.domElement );
-
-const camera = new THREE.PerspectiveCamera( 75, innerWidth / innerHeight, 1, 1000 );
-camera.position.set( 0, 100, 300 );
-
-const controls = new OrbitControls( camera, renderer.domElement );
-controls.update();
-
-const listener = new THREE.AudioListener();
-camera.add( listener );
-
-const ambientLight = new THREE.AmbientLight( 0xffffff, 0.1);
-scene.add( ambientLight );
-
-const terrain = createTerrain( 1000, 1000 );
-scene.add( terrain );
-
-const castle = createCastle();
-scene.add( castle );
-
-const characters = importCharacter();
-scene.add( characters);
-
-const sun = createSun();
-scene.add(sun);
-
-//AJOUT DES ARBRES
-
-        const tronc = createTrunc(2, 2, 80, 64);
-        scene.add(tronc);
-        tronc.receiveShadow= true;
-        tronc.position.x = 138;
-        tronc.position.z = -24;
-        const feuille = createLeaf(138, 40, -24);
-        scene.add(feuille);
-        const tronc2 = createTrunc(2, 2, 80, 64);
-        scene.add(tronc2);
-        tronc2.position.x = 108;
-        tronc2.position.z = -37;
-        const feuille2 = createLeaf(108, 40, -37);
-        scene.add(feuille2);
-        const tronc3 = createTrunc(2, 2, 80, 64);
-        scene.add(tronc3);
-        tronc3.position.x = 167;
-        tronc3.position.z = -26;
-        const feuille3 = createLeaf(167, 40, -26);
-        scene.add(feuille3);
-        const tronc4 = createTrunc(2, 2, 80, 64);
-        scene.add(tronc4);
-        tronc4.position.x = 130;
-        tronc4.position.z = 18;
-        const feuille4 = createLeaf(130, 40, 18);
-        scene.add(feuille4);
-        const tronc5 = createTrunc(2, 2, 80, 64);
-        scene.add(tronc5);
-        tronc5.position.x = 167;
-        tronc5.position.z = 40;
-        const feuille5 = createLeaf(167, 42, 40);
-        scene.add(feuille5);
-        const tronc6 = createTrunc(2, 2, 80, 64);
-        scene.add(tronc6);
-        tronc6.position.x = 167;
-        tronc6.position.z = 11;
-        const feuille6 = createLeaf(167, 42, 11);
-        scene.add(feuille6);
-        const tronc7 = createTrunc(2, 2, 80, 64);
-        scene.add(tronc7);
-        tronc7.receiveShadow= true;
-        tronc7.position.x = -138;
-        tronc7.position.z = -24;
-        const feuille7 = createLeaf(-138, 40, -24);
-        scene.add(feuille7);
-        const tronc8 = createTrunc(2, 2, 80, 64);
-        scene.add(tronc8);
-        tronc8.position.x = -108;
-        tronc8.position.z = -37;
-        const feuille8 = createLeaf(-108, 40, -37);
-        scene.add(feuille8);
-        const tronc9 = createTrunc(2, 2, 80, 64);
-        scene.add(tronc9);
-        tronc9.position.x = -167;
-        tronc9.position.z = -26;
-        const feuille9 = createLeaf(-167, 40, -26);
-        scene.add(feuille9);
-        const tronc10 = createTrunc(2, 2, 80, 64);
-        scene.add(tronc10);
-        tronc10.position.x = -130;
-        tronc10.position.z = 18;
-        const feuille10 = createLeaf(-130, 40, 18);
-        scene.add(feuille10);
-        const tronc11 = createTrunc(2, 2, 80, 64);
-        scene.add(tronc11);
-        tronc11.position.x = -167;
-        tronc11.position.z = 40;
-        const feuille11 = createLeaf(-167, 42, 40);
-        scene.add(feuille11);
-        const tronc12 = createTrunc(2, 2, 80, 64);
-        scene.add(tronc12);
-        tronc12.position.x = -167;
-        tronc12.position.z = 11;
-        const feuille12 = createLeaf(-167, 42, 11);
-        scene.add(feuille12);
-
-
-const sound1 = new THREE.PositionalAudio( listener );
-const songElement = document.getElementById( 'song' );
-sound1.setMediaElementSource( songElement );
-sound1.setRefDistance( 200 );
-songElement.play();
-tronc.add( sound1 );
-
-//createHerbs( 0.2, 2.5, 20000 );
-
-const curve = new THREE.CubicBezierCurve3(
-    new THREE.Vector3(-550,  -20, 0),
-    new THREE.Vector3( -150, 400, 20),
-    new THREE.Vector3( 150, 400, 20),
-    new THREE.Vector3( 550, -20, 100)
-);
-
-const stats = new Stats();
-document.body.appendChild(stats.dom);
 
 
 
-createControls();
-animate();
+const startButton = document.getElementById( 'startButton' );
+startButton.addEventListener( 'click', init );
+///INIT
+function init(){
+    const overlay = document.getElementById( 'overlay' );
+    overlay.remove();
+    //SOUND
+    let analyser1, analyser2, analyser3;
+    //StartButton
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    const renderer = new THREE.WebGLRenderer({alpha:false,antialias:true});
+    renderer.setSize( innerWidth, innerHeight );
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.VSMShadowMap;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.gammaFactor = 5;
+    renderer.outputEncoding = THREE.sRGBEncoding;
+    renderer.setPixelRatio( devicePixelRatio );
+    document.body.appendChild( renderer.domElement );
+    
+   
+
+
+    const camera = new THREE.PerspectiveCamera( 75, innerWidth / innerHeight, 1, 1000 );
+    camera.position.set( 0, 100, 300 );
+
+    const controls = new OrbitControls( camera, renderer.domElement );
+    //const controls = new FirstPersonControls( camera, renderer.domElement );
+
+	controls.movementSpeed = 70;
+	controls.lookSpeed = 0.05;
+	controls.noFly = true;
+	controls.lookVertical = false;
+    controls.update();
+
+    const listener = new THREE.AudioListener();
+    camera.add( listener );
+
+    const ambientLight = new THREE.AmbientLight( 0xffffff, 0.1);
+    scene.add( ambientLight );
+
+    const terrain = createTerrain( 1000, 1000 );
+    scene.add( terrain );
+
+    const castle = createCastle();
+    scene.add( castle );
+
+    const characters = importCharacter();
+    scene.add( characters );
+
+    const sun = createSun();
+    scene.add(sun);
+
+
+    //AJOUT DES ARBRES
+
+    const tronc = createTrunc(2, 2, 80, 64);
+    scene.add(tronc);
+    tronc.receiveShadow= true;
+    tronc.position.x = 138;
+    tronc.position.z = -24;
+    const feuille = createLeaf(138, 40, -24);
+    scene.add(feuille);
+    const tronc2 = createTrunc(2, 2, 80, 64);
+    scene.add(tronc2);
+    tronc2.position.x = 108;
+    tronc2.position.z = -37;
+    const feuille2 = createLeaf(108, 40, -37);
+    scene.add(feuille2);
+    const tronc3 = createTrunc(2, 2, 80, 64);
+    scene.add(tronc3);
+    tronc3.position.x = 167;
+    tronc3.position.z = -26;
+    const feuille3 = createLeaf(167, 40, -26);
+    scene.add(feuille3);
+    const tronc4 = createTrunc(2, 2, 80, 64);
+    scene.add(tronc4);
+    tronc4.position.x = 130;
+    tronc4.position.z = 18;
+    const feuille4 = createLeaf(130, 40, 18);
+    scene.add(feuille4);
+    const tronc5 = createTrunc(2, 2, 80, 64);
+    scene.add(tronc5);
+    tronc5.position.x = 167;
+    tronc5.position.z = 40;
+    const feuille5 = createLeaf(167, 42, 40);
+    scene.add(feuille5);
+    const tronc6 = createTrunc(2, 2, 80, 64);
+    scene.add(tronc6);
+    tronc6.position.x = 167;
+    tronc6.position.z = 11;
+    const feuille6 = createLeaf(167, 42, 11);
+    scene.add(feuille6);
+    const tronc7 = createTrunc(2, 2, 80, 64);
+    scene.add(tronc7);
+    tronc7.receiveShadow= true;
+    tronc7.position.x = -138;
+    tronc7.position.z = -24;
+    const feuille7 = createLeaf(-138, 40, -24);
+    scene.add(feuille7);
+    const tronc8 = createTrunc(2, 2, 80, 64);
+    scene.add(tronc8);
+    tronc8.position.x = -108;
+    tronc8.position.z = -37;
+    const feuille8 = createLeaf(-108, 40, -37);
+    scene.add(feuille8);
+    const tronc9 = createTrunc(2, 2, 80, 64);
+    scene.add(tronc9);
+    tronc9.position.x = -167;
+    tronc9.position.z = -26;
+    const feuille9 = createLeaf(-167, 40, -26);
+    scene.add(feuille9);
+    const tronc10 = createTrunc(2, 2, 80, 64);
+    scene.add(tronc10);
+    tronc10.position.x = -130;
+    tronc10.position.z = 18;
+    const feuille10 = createLeaf(-130, 40, 18);
+    scene.add(feuille10);
+    const tronc11 = createTrunc(2, 2, 80, 64);
+    scene.add(tronc11);
+    tronc11.position.x = -167;
+    tronc11.position.z = 40;
+    const feuille11 = createLeaf(-167, 42, 40);
+    scene.add(feuille11);
+    const tronc12 = createTrunc(2, 2, 80, 64);
+    scene.add(tronc12);
+    tronc12.position.x = -167;
+    tronc12.position.z = 11;
+    const feuille12 = createLeaf(-167, 42, 11);
+    scene.add(feuille12);
+
+
+    const sound1 = new THREE.PositionalAudio( listener );
+    const songElement = document.getElementById( 'song' );
+    sound1.setMediaElementSource( songElement );
+    sound1.setRefDistance( 200 );
+    songElement.play();
+    tronc.add( sound1 );
+
+    //createHerbs( 0.2, 2.5, 20000 );
+
+    const curve = new THREE.CubicBezierCurve3(
+        new THREE.Vector3(-550,  -20, 0),
+        new THREE.Vector3( -150, 400, 20),
+        new THREE.Vector3( 150, 400, 20),
+        new THREE.Vector3( 550, -20, 100)
+    );
+    
+    const SoundControls = function () {
+
+        this.master = listener.getMasterVolume();
+        this.firstSphere = sound1.getVolume();
+    };
+
+
+    const stats = new Stats();
+    document.body.appendChild(stats.dom);
+
+    window.onresize = function () {
+
+        camera.aspect = innerWidth / innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize( innerWidth, innerHeight );
+    }
+
+    const animate = function(vitesse){
+        //sunRun
+        
+        curve.getPoint((1 * vitesse * .0001) % 1, sun.position);
+        
+        renderer.render( scene, camera ) ;
+        requestAnimationFrame( animate );
+        const delta = clock.getDelta();
+       
+    
+        if ( mixer ) mixer.update( delta );
+        if ( mixer2 ) mixer2.update( delta );
+        renderer.render( scene, camera ) ;
+        stats.update();
+    }
+    const createControls = function() {
+        let gui = new GUI();
+        const soundControls = new SoundControls();
+		const volumeFolder = gui.addFolder( 'sound volume' );
+        scene.add( castle );
+
+        volumeFolder.add( soundControls, 'firstSphere' ).min( 0.0 ).max( 1.0 ).step( 0.01 ).onChange( function () {
+
+            sound1.setVolume( soundControls.firstSphere );
+
+        } );
+        volumeFolder.open();
+
+        const params = {
+            'castle position x' : castle.position.x,
+            'castle position y' : castle.position.y,
+            'castle position z' : castle.position.z
+        };
+
+        gui.add( params, 'castle position x', -100, 100 ).onChange( function ( val )
+        {
+            castle.position.x = val;
+            renderer.render( scene, camera ) ;
+        });
+
+        gui.add( params, 'castle position y', 0, 100 ).onChange( function ( val )
+        {
+            castle.position.y = val;
+            renderer.render( scene, camera ) ;
+        });
+
+        gui.add( params, 'castle position z', -100, 100 ).onChange( function ( val )
+        {
+            castle.position.z = val;
+            renderer.render( scene, camera ) ;
+        });
+
+        gui.open();
+    }
+    createControls();
+    animate();
+}
+
+
+
+
+
 
 //FUNCTIONS
-function animate( vitesse ) {
+
+/*function animate( vitesse ) {
     //sunRun
+    
     curve.getPoint((1 * vitesse * .0001) % 1, sun.position);
     
     renderer.render( scene, camera ) ;
@@ -196,13 +291,16 @@ function animate( vitesse ) {
      if ( mixer2 ) mixer2.update( delta );
     renderer.render( scene, camera ) ;
     stats.update();
-}
+}*/
 
 
 
-function createControls()
+/*function createControls()
 {
     let gui = new GUI();
+
+    const castle = createCastle();
+    scene.add( castle );
 
     const params = {
         'castle position x' : castle.position.x,
@@ -229,15 +327,10 @@ function createControls()
     });
 
     gui.open();
-}
+}*/
 
 
-window.onresize = function () {
 
-    camera.aspect = innerWidth / innerHeight;
-    camera.updateProjectionMatrix();
-    renderer.setSize( innerWidth, innerHeight );
-}
 
 function createLeaf(large, haut, prof){
     let leaf = new THREE.Mesh(
@@ -434,7 +527,6 @@ function createTorch() {
 
     return torch;
 }
-
 function createCastle() {
     
     const castle = new THREE.Group();
@@ -497,6 +589,7 @@ function createCastle() {
 
     return castle;
 }
+
 
 function createSun()
 {
