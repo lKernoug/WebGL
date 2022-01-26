@@ -44,20 +44,15 @@ const startButton = document.getElementById( 'startButton' );
 startButton.addEventListener( 'click', init );
 ///INIT
 function init(){
+    //StartButton
     const overlay = document.getElementById( 'overlay' );
     overlay.remove();
     //SOUND
     let analyser1, analyser2, analyser3;
-    //StartButton
     
-    
-    
-    
-    
-    
-    
-    
-    
+    const camera = new THREE.PerspectiveCamera( 75, innerWidth / innerHeight, 1, 1000 );
+    camera.position.set( 0, 100, 300 );
+
     const renderer = new THREE.WebGLRenderer({alpha:false,antialias:true});
     renderer.setSize( innerWidth, innerHeight );
     renderer.shadowMap.enabled = true;
@@ -66,22 +61,33 @@ function init(){
     renderer.gammaFactor = 5;
     renderer.outputEncoding = THREE.sRGBEncoding;
     renderer.setPixelRatio( devicePixelRatio );
+    renderer.setSize( window.innerWidth, window.innerHeight );
     document.body.appendChild( renderer.domElement );
     
-   
-
-
-    const camera = new THREE.PerspectiveCamera( 75, innerWidth / innerHeight, 1, 1000 );
-    camera.position.set( 0, 100, 300 );
-
-    const controls = new OrbitControls( camera, renderer.domElement );
-    //const controls = new FirstPersonControls( camera, renderer.domElement );
+   const controls = new FirstPersonControls( camera, renderer.domElement );
 
 	controls.movementSpeed = 70;
 	controls.lookSpeed = 0.05;
 	controls.noFly = true;
 	controls.lookVertical = false;
-    controls.update();
+    
+    window.addEventListener( 'resize', window.on );
+    
+    
+    
+    
+    
+    
+    
+    
+    
+   
+
+
+    
+
+    //const controls = new OrbitControls( camera, renderer.domElement );
+    
 
     const listener = new THREE.AudioListener();
     camera.add( listener );
@@ -206,23 +212,30 @@ function init(){
     const stats = new Stats();
     document.body.appendChild(stats.dom);
 
-    window.onresize = function () {
+    const windowOnResize = function () {
 
         camera.aspect = innerWidth / innerHeight;
         camera.updateProjectionMatrix();
         renderer.setSize( innerWidth, innerHeight );
+        controls.handleResize();
     }
 
     const animate = function(vitesse){
+        curve.getPoint((1 * vitesse * .0001) % 1, sun.position);
+        requestAnimationFrame( animate );
+        render();
+    }
+
+    const render = function(){
         //sunRun
         
-        curve.getPoint((1 * vitesse * .0001) % 1, sun.position);
-        
-        renderer.render( scene, camera ) ;
-        requestAnimationFrame( animate );
-        const delta = clock.getDelta();
        
+        
+        
+        const delta = clock.getDelta();
+        controls.update( delta );
     
+        renderer.render( scene, camera ) ;
         if ( mixer ) mixer.update( delta );
         if ( mixer2 ) mixer2.update( delta );
         renderer.render( scene, camera ) ;
